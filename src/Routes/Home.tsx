@@ -58,6 +58,12 @@ const Box = styled(motion.div)<{ bgphoto: string }>`
   background-position: center center;
   background-size: cover;
   height: 200px;
+  &:first-child {
+    transform-origin: center left;
+  }
+  &:last-child {
+    transform-origin: center right;
+  }
 `;
 
 const rowVariants = {
@@ -66,6 +72,19 @@ const rowVariants = {
   },
   visible: { x: 0 },
   exit: { x: -window.outerWidth + 10 },
+};
+
+const boxVariants = {
+  normal: { scale: 1 },
+  hover: {
+    scale: 1.3,
+    y: -50,
+    transition: {
+      delay: 0.5,
+      duration: 0.3,
+      type: "tween",
+    },
+  },
 };
 
 const offset = 6;
@@ -82,7 +101,7 @@ function Home() {
       if (leaving) return;
       toggleLeaving();
       const totalMovies = data.results.length - 1;
-      const maxIndex = Math.ceil(totalMovies / offset) - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
@@ -116,6 +135,10 @@ function Home() {
                   .map((movie) => (
                     <Box
                       key={movie.id}
+                      variants={boxVariants}
+                      initial="normal"
+                      whileHover="hover"
+                      transition={{ type: "tween" }}
                       bgphoto={makeImagePath(movie.backdrop_path, "w500")}
                     ></Box>
                   ))}
