@@ -5,7 +5,6 @@ import { makeImagePath } from "../utils";
 import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
-import { theme } from "../theme";
 
 const Wrapper = styled.div`
   background: black;
