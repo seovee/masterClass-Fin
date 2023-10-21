@@ -167,6 +167,9 @@ function Header() {
               {tvMatch && <Circle layoutId="circle" />}
             </Link>
           </Item>
+          <Item>
+            <Link to="/about">About</Link>
+          </Item>
         </Items>
       </Col>
       <Col>
