@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { motion, useAnimation, useViewportScroll } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { log } from "console";
 
 const Nav = styled(motion.nav)`
   display: flex;
@@ -67,6 +68,7 @@ const Circle = styled(motion.span)`
   height: 5px;
   border-radius: 5px;
   bottom: -5px;
+  /* 중앙으로 맞추는 법 */
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -111,8 +113,11 @@ function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useRouteMatch("/");
   const tvMatch = useRouteMatch("/tv");
+  const AboutMatch = useRouteMatch("/about");
   const inputAnimation = useAnimation();
   const navAnimation = useAnimation();
+  // useScroll로 변경되었음
+  // 스크롤될 때 MotionValue를 반환한다.
   const { scrollY } = useViewportScroll();
   const toggleSearch = () => {
     if (searchOpen) {
@@ -126,6 +131,7 @@ function Header() {
     }
     setSearchOpen((prev) => !prev);
   };
+  // useMotionValueEvent를 사용하면 됨(리팩해보자)
   useEffect(() => {
     scrollY.onChange(() => {
       if (scrollY.get() > 80) {
@@ -169,6 +175,8 @@ function Header() {
           </Item>
           <Item>
             <Link to="/about">About</Link>
+            {/* 헤더부분 빨간색 circle 애니메이션 */}
+            {AboutMatch && <Circle layoutId="circle" />}
           </Item>
         </Items>
       </Col>

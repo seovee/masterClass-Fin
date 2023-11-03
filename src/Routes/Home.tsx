@@ -1,5 +1,11 @@
 import { useQuery } from "react-query";
-import { IGetMoviesResult, getMovies } from "../api";
+import {
+  IGetMoviesResult,
+  getLatest,
+  getNowPlaying,
+  getTopRated,
+  getUpcomming,
+} from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
@@ -160,8 +166,22 @@ function Home() {
   const { scrollY } = useViewportScroll();
   const { data, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"],
-    getMovies
+    getNowPlaying
   );
+  // 멀티플 쿼리(커스텀 훅으로 사용해보기)
+  const useMultipleQuery = () => {
+    const latest = useQuery(["latest"], getLatest);
+    const topRated = useQuery(["topRated"], getTopRated);
+    const upComming = useQuery(["topRated"], getUpcomming);
+    return [latest, topRated, upComming];
+  };
+
+  const [
+    { isLoading: loadingLatest, data: latestData },
+    { isLoading: loadingTopRated, data: topRatedData },
+    { isLoading: loadingUpComming, data: upCommingData },
+  ] = useMultipleQuery();
+
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const increaseIndex = () => {
