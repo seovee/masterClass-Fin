@@ -23,6 +23,8 @@ const Loader = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 50px;
+  font-weight: 800;
 `;
 
 const Slider = styled.div`
@@ -74,7 +76,7 @@ const Overlay = styled(motion.div)`
   opacity: 0;
 `;
 
-const BigMovie = styled(motion.div)`
+const BigMovieContainer = styled(motion.div)`
   position: absolute;
   width: 40vw;
   height: 80vh;
@@ -105,6 +107,7 @@ const BigOverview = styled.p`
   top: -80px;
 `;
 
+// & Variants &
 const rowVariants = {
   hidden: {
     x: window.outerWidth - 10,
@@ -183,12 +186,12 @@ function Home() {
   return (
     <Wrapper>
       {isLoading ? (
-        <Loader></Loader>
+        <Loader>Loading...</Loader>
       ) : (
         <>
-          {/* 큰 메인배너 화면 */}
+          {/* 메인 Banner */}
           <Banner />
-          {/* 슬라이더 구분을 해야됨 */}
+          {/* 슬라이더 */}
           <Slider>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <button onClick={increaseIndex}>넘기기</button>
@@ -250,7 +253,6 @@ function Home() {
               ))}
             </Row>
           </Slider>
-
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
@@ -259,7 +261,7 @@ function Home() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 />
-                <BigMovie
+                <BigMovieContainer
                   style={{ top: scrollY.get() + 100 }}
                   layoutId={bigMovieMatch.params.movieId}
                 >
@@ -277,7 +279,7 @@ function Home() {
                       <BigOverview>{clickedMovie.overview}</BigOverview>
                     </>
                   )}
-                </BigMovie>
+                </BigMovieContainer>
               </>
             ) : null}
           </AnimatePresence>
