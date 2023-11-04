@@ -11,6 +11,7 @@ import { makeImagePath } from "../utils";
 import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
+import Banner from "../Components/Banner";
 
 const Wrapper = styled.div`
   background: black;
@@ -24,31 +25,9 @@ const Loader = styled.div`
   align-items: center;
 `;
 
-const Banner = styled.div<{ bgPhoto: string }>`
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 60px;
-  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
-    url(${(props) => props.bgPhoto});
-  background-size: cover;
-`;
-
-const Title = styled.h2`
-  font-size: 68px;
-  margin-bottom: 20px;
-  font-weight: 600;
-`;
-
-const Overview = styled.p`
-  font-size: 30px;
-  width: 50%;
-`;
-
 const Slider = styled.div`
-  position: relative;
   top: -100px;
+  background-color: red;
 `;
 
 const Row = styled(motion.div)`
@@ -175,7 +154,7 @@ function Home() {
     const upComming = useQuery(["topRated"], getUpcomming);
     return [latest, topRated, upComming];
   };
-
+  // 멀티플 쿼리로 만든 배열
   const [
     { isLoading: loadingLatest, data: latestData },
     { isLoading: loadingTopRated, data: topRatedData },
@@ -207,15 +186,12 @@ function Home() {
         <Loader></Loader>
       ) : (
         <>
-          <Banner
-            onClick={increaseIndex}
-            bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
-          >
-            <Title>{data?.results[0].title}</Title>
-            <Overview>{data?.results[0].overview}</Overview>
-          </Banner>
+          {/* 큰 메인배너 화면 */}
+          <Banner />
+          {/* 슬라이더 구분을 해야됨 */}
           <Slider>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
+              <button onClick={increaseIndex}>넘기기</button>
               <Row
                 variants={rowVariants}
                 initial="hidden"
@@ -246,6 +222,35 @@ function Home() {
               </Row>
             </AnimatePresence>
           </Slider>
+          {/* 슬라이드를 구분해야함 */}
+          <Slider>
+            <Row
+              variants={rowVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ type: "tween", duration: 1 }}
+              key={index}
+            >
+              {topRatedData?.results.map((topRated: any) => (
+                <Box
+                  key={topRated.id}
+                  layoutId={topRated.id + ""}
+                  variants={boxVariants}
+                  initial="normal"
+                  whileHover="hover"
+                  transition={{ type: "tween" }}
+                  onClick={() => onBoxClicked(topRated.id)}
+                  bgphoto={makeImagePath(topRated.backdrop_path, "w500")}
+                >
+                  <Info variants={infoVariants}>
+                    <h4>{topRated.title}</h4>
+                  </Info>
+                </Box>
+              ))}
+            </Row>
+          </Slider>
+
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
