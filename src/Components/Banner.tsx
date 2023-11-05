@@ -1,4 +1,4 @@
-//** 메인 Banner 컴포넌트
+//* 메인 Banner 컴포넌트
 import { useQuery } from "react-query";
 import { IGetMoviesResult, getNowPlaying } from "../api";
 import { makeImagePath } from "../utils";
