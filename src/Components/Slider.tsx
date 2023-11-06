@@ -10,7 +10,7 @@ import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 
 const SliderContainer = styled.div`
   top: -100px;
-  /* background-color: blue; */
+  background-color: blue;
   padding: 10px;
 `;
 
@@ -19,6 +19,16 @@ const SliderTitle = styled.h2`
   font-size: 25px;
   font-weight: 700;
   padding: 5px 0;
+`;
+
+const Button = styled.button`
+  border: none;
+  position: absolute;
+  background-color: rgba(0, 200, 0, 0.5);
+  height: auto;
+  color: lightgray;
+  height: 200px;
+  width: 40px;
 `;
 
 const Row = styled(motion.div)`
@@ -56,7 +66,7 @@ const Info = styled(motion.div)`
   }
 `;
 
-// & Variants &
+// & Variants
 const boxHoverVariants = {
   normal: { scale: 1 },
   hover: {
@@ -70,6 +80,18 @@ const boxHoverVariants = {
   },
 };
 
+const infoVariants = {
+  hover: {
+    opacity: 1,
+    transition: {
+      delay: 0.5,
+      duration: 0.3,
+      type: "tween",
+    },
+  },
+};
+
+// & Interface
 export interface ISlider {
   data: any;
   isLoading: boolean;
@@ -79,44 +101,38 @@ export interface ISlider {
 // 화면 Box 갯수 선언
 const offset = 6;
 
-export default function SliderComponent({
-  data,
-  isLoading,
-  sectionName,
-}: ISlider) {
-  // 멀티플 Query Hook
-  const useMultipleQuery = () => {
-    const topRated = useQuery(["topRated"], getTopRated);
-    const upComming = useQuery(["topRated"], getUpcomming);
-    return [topRated, upComming];
-  };
-  // 멀티플 Query 배열
-  const [
-    { isLoading: loadingTopRated, data: topRatedData },
-    { isLoading: loadingUpComming, data: upCommingData },
-  ] = useMultipleQuery();
+export default function Slider({ data, isLoading, sectionName }: ISlider) {
+  // Row페이지 상태관리
+  const [page, setPage] = useState(0);
 
-  const [index, setIndex] = useState(0);
+  // Next, Prev버튼 액션
+  const nextPage = () => {
+    if (data) {
+      const totalMovies = data.results.length;
+      const maxPage = Math.floor(totalMovies / offset) - 1;
+      setPage((page) => (page === maxPage ? 0 : page + 1));
+    }
+  };
 
   return (
     <SliderContainer>
       <SliderTitle>{sectionName}</SliderTitle>
+      <Button onClick={nextPage} style={{ left: 0 }}>
+        <SlArrowLeft />
+      </Button>
+      <Button onClick={nextPage} style={{ right: 0 }}>
+        <SlArrowRight />
+      </Button>
       <AnimatePresence initial={false}>
-        <button style={{ position: "absolute", left: 0 }}>
-          <SlArrowLeft />
-        </button>
-        <button style={{ position: "absolute", right: 0 }}>
-          <SlArrowRight />
-        </button>
         <Row
           initial="hidden"
           animate="visible"
           exit="exit"
           transition={{ type: "tween", duration: 1 }}
-          key={index}
+          key={sectionName}
         >
           {data?.results
-            .slice(offset * index, offset * index + offset)
+            .slice(offset * page, offset * page + offset)
             .map((movie: any) => (
               <Box
                 key={movie.id}
@@ -127,7 +143,7 @@ export default function SliderComponent({
                 transition={{ type: "tween" }}
                 bgphoto={makeImagePath(movie.backdrop_path, "w500")}
               >
-                <Info>
+                <Info variants={infoVariants}>
                   <h4>{movie.title}</h4>
                 </Info>
               </Box>

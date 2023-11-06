@@ -11,7 +11,7 @@ import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Banner from "../Components/Banner";
-import SliderComponent from "../Components/Slider";
+import Slider from "../Components/Slider";
 
 const Wrapper = styled.div`
   background: black;
@@ -27,45 +27,6 @@ const Loader = styled.div`
   font-weight: 800;
 `;
 
-const Slider = styled.div`
-  top: -100px;
-  background-color: red;
-`;
-
-const Row = styled(motion.div)`
-  display: grid;
-  gap: 5px;
-  grid-template-columns: repeat(6, 1fr);
-  width: 100%;
-`;
-
-const Box = styled(motion.div)<{ bgphoto: string }>`
-  background-color: white;
-  background-image: url(${(props) => props.bgphoto});
-  background-position: center center;
-  background-size: cover;
-  height: 200px;
-  cursor: pointer;
-  &:first-child {
-    transform-origin: center left;
-  }
-  &:last-child {
-    transform-origin: center right;
-  }
-`;
-
-const Info = styled(motion.div)`
-  padding: 10px;
-  background-color: ${(props) => props.theme.black.lighter};
-  opacity: 0;
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  h4 {
-    text-align: center;
-    font-size: 18px;
-  }
-`;
 const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
@@ -106,41 +67,6 @@ const BigOverview = styled.p`
   top: -80px;
 `;
 
-// & Variants &
-const rowVariants = {
-  hidden: {
-    x: window.outerWidth - 10,
-  },
-  visible: { x: 0 },
-  exit: { x: -window.outerWidth + 10 },
-};
-
-const boxHoverVariants = {
-  normal: { scale: 1 },
-  hover: {
-    scale: 1.3,
-    y: -50,
-    transition: {
-      delay: 0.3,
-      duration: 0.2,
-      type: "spring",
-    },
-  },
-};
-
-const infoVariants = {
-  hover: {
-    opacity: 1,
-    transition: {
-      delay: 0.5,
-      duration: 0.3,
-      type: "tween",
-    },
-  },
-};
-
-const offset = 6;
-
 function Home() {
   const history = useHistory();
   const bigMovieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId");
@@ -152,8 +78,8 @@ function Home() {
       ["nowPlaying", "movie"],
       getNowPlaying
     );
-    const topRated = useQuery(["topRated"], getTopRated);
-    const upComming = useQuery(["topRated"], getUpcomming);
+    const topRated = useQuery<IGetMoviesResult>(["topRated"], getTopRated);
+    const upComming = useQuery<IGetMoviesResult>(["topRated"], getUpcomming);
     return [nowPlaying, topRated, upComming];
   };
   // 멀티플 Query 배열
@@ -163,19 +89,7 @@ function Home() {
     { isLoading: loadingUpComming, data: upCommingData },
   ] = useMultipleQuery();
 
-  const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
-
-  // 버튼 액션
-  const increaseIndex = () => {
-    if (nowPlayingData) {
-      if (leaving) return;
-      toggleLeaving();
-      const totalMovies = nowPlayingData.results.length - 1;
-      const maxIndex = Math.floor(totalMovies / offset) - 1;
-      setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
-    }
-  };
   const toggleLeaving = () => setLeaving((prev) => !prev);
 
   // 영화 상세정보 보기
@@ -198,7 +112,7 @@ function Home() {
           {/* 메인 Banner */}
           <Banner />
           {/* 슬라이더 */}
-          <Slider>
+          {/* <Slider>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <button onClick={increaseIndex}>Prev</button>
               <button onClick={increaseIndex}>Next</button>
@@ -208,11 +122,11 @@ function Home() {
                 animate="visible"
                 exit="exit"
                 transition={{ type: "tween", duration: 1 }}
-                key={index}
+                key={page}
               >
                 {nowPlayingData?.results
                   .slice(1)
-                  .slice(offset * index, offset * index + offset)
+                  .slice(offset * page, offset * page + offset)
                   .map((movie: any) => (
                     <Box
                       key={movie.id}
@@ -231,19 +145,19 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
-          </Slider>
+          </Slider> */}
           {/* 슬라이더 컴포넌트 */}
-          <SliderComponent
+          <Slider
             sectionName="Now Playing"
             data={nowPlayingData}
             isLoading={loadingNowPlaying}
           />
-          <SliderComponent
+          <Slider
             sectionName="Top Rated"
             data={topRatedData}
             isLoading={loadingTopRated}
           />
-          <SliderComponent
+          <Slider
             sectionName="UpComming"
             data={upCommingData}
             isLoading={loadingUpComming}
