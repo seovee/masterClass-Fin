@@ -1,6 +1,7 @@
-//* Slider 컴포넌트 분리
+//* Slider 컴포넌트
+
 import { useQuery } from "react-query";
-import { getLatest, getTopRated, getUpcomming } from "../api";
+import { getTopRated, getUpcomming } from "../api";
 import { AnimatePresence, motion } from "framer-motion";
 import styled from "styled-components";
 import { useState } from "react";
@@ -69,19 +70,28 @@ const boxHoverVariants = {
   },
 };
 
+export interface ISlider {
+  data: any;
+  isLoading: boolean;
+  sectionName: string;
+}
+
+// 화면 Box 갯수 선언
 const offset = 6;
 
-export default function SliderComponent() {
+export default function SliderComponent({
+  data,
+  isLoading,
+  sectionName,
+}: ISlider) {
   // 멀티플 Query Hook
   const useMultipleQuery = () => {
-    const latest = useQuery(["latest"], getLatest);
     const topRated = useQuery(["topRated"], getTopRated);
     const upComming = useQuery(["topRated"], getUpcomming);
-    return [latest, topRated, upComming];
+    return [topRated, upComming];
   };
   // 멀티플 Query 배열
   const [
-    { isLoading: loadingLatest, data: latestData },
     { isLoading: loadingTopRated, data: topRatedData },
     { isLoading: loadingUpComming, data: upCommingData },
   ] = useMultipleQuery();
@@ -90,7 +100,7 @@ export default function SliderComponent() {
 
   return (
     <SliderContainer>
-      <SliderTitle>상영중인 영화</SliderTitle>
+      <SliderTitle>{sectionName}</SliderTitle>
       <AnimatePresence initial={false}>
         <button style={{ position: "absolute", left: 0 }}>
           <SlArrowLeft />
@@ -105,8 +115,7 @@ export default function SliderComponent() {
           transition={{ type: "tween", duration: 1 }}
           key={index}
         >
-          {topRatedData?.results
-            .slice(1)
+          {data?.results
             .slice(offset * index, offset * index + offset)
             .map((movie: any) => (
               <Box

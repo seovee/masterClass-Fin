@@ -1,7 +1,6 @@
 import { useQuery } from "react-query";
 import {
   IGetMoviesResult,
-  getLatest,
   getNowPlaying,
   getTopRated,
   getUpcomming,
@@ -12,6 +11,7 @@ import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Banner from "../Components/Banner";
+import SliderComponent from "../Components/Slider";
 
 const Wrapper = styled.div`
   background: black;
@@ -36,7 +36,6 @@ const Row = styled(motion.div)`
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
-  position: absolute;
   width: 100%;
 `;
 
@@ -116,15 +115,15 @@ const rowVariants = {
   exit: { x: -window.outerWidth + 10 },
 };
 
-const boxVariants = {
+const boxHoverVariants = {
   normal: { scale: 1 },
   hover: {
     scale: 1.3,
     y: -50,
     transition: {
-      delay: 0.5,
-      duration: 0.3,
-      type: "tween",
+      delay: 0.3,
+      duration: 0.2,
+      type: "spring",
     },
   },
 };
@@ -146,46 +145,53 @@ function Home() {
   const history = useHistory();
   const bigMovieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId");
   const { scrollY } = useViewportScroll();
-  const { data, isLoading } = useQuery<IGetMoviesResult>(
-    ["movies", "nowPlaying"],
-    getNowPlaying
-  );
-  // 멀티플 쿼리(커스텀 훅으로 사용해보기)
+
+  // 멀티플 Query Hook
   const useMultipleQuery = () => {
-    const latest = useQuery(["latest"], getLatest);
+    const nowPlaying = useQuery<IGetMoviesResult>(
+      ["nowPlaying", "movie"],
+      getNowPlaying
+    );
     const topRated = useQuery(["topRated"], getTopRated);
     const upComming = useQuery(["topRated"], getUpcomming);
-    return [latest, topRated, upComming];
+    return [nowPlaying, topRated, upComming];
   };
-  // 멀티플 쿼리로 만든 배열
+  // 멀티플 Query 배열
   const [
-    { isLoading: loadingLatest, data: latestData },
+    { isLoading: loadingNowPlaying, data: nowPlayingData },
     { isLoading: loadingTopRated, data: topRatedData },
     { isLoading: loadingUpComming, data: upCommingData },
   ] = useMultipleQuery();
 
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
+
+  // 버튼 액션
   const increaseIndex = () => {
-    if (data) {
+    if (nowPlayingData) {
       if (leaving) return;
       toggleLeaving();
-      const totalMovies = data.results.length - 1;
+      const totalMovies = nowPlayingData.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
   const toggleLeaving = () => setLeaving((prev) => !prev);
+
+  // 영화 상세정보 보기
   const onBoxClicked = (movieId: number) => {
     history.push(`/movies/${movieId}`);
   };
+  // 영화 상세정보 빠져나오기
   const onOverlayClick = () => history.push("/");
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
-    data?.results.find((movie) => movie.id === +bigMovieMatch.params.movieId);
+    nowPlayingData?.results.find(
+      (movie: any) => movie.id === +bigMovieMatch.params.movieId
+    );
   return (
     <Wrapper>
-      {isLoading ? (
+      {loadingNowPlaying ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
@@ -194,7 +200,8 @@ function Home() {
           {/* 슬라이더 */}
           <Slider>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
-              <button onClick={increaseIndex}>넘기기</button>
+              <button onClick={increaseIndex}>Prev</button>
+              <button onClick={increaseIndex}>Next</button>
               <Row
                 variants={rowVariants}
                 initial="hidden"
@@ -203,14 +210,14 @@ function Home() {
                 transition={{ type: "tween", duration: 1 }}
                 key={index}
               >
-                {data?.results
+                {nowPlayingData?.results
                   .slice(1)
                   .slice(offset * index, offset * index + offset)
-                  .map((movie) => (
+                  .map((movie: any) => (
                     <Box
                       key={movie.id}
                       layoutId={movie.id + ""}
-                      variants={boxVariants}
+                      variants={boxHoverVariants}
                       initial="normal"
                       whileHover="hover"
                       transition={{ type: "tween" }}
@@ -225,34 +232,23 @@ function Home() {
               </Row>
             </AnimatePresence>
           </Slider>
-          {/* 슬라이드를 구분해야함 */}
-          <Slider>
-            <Row
-              variants={rowVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ type: "tween", duration: 1 }}
-              key={index}
-            >
-              {topRatedData?.results.map((topRated: any) => (
-                <Box
-                  key={topRated.id}
-                  layoutId={topRated.id + ""}
-                  variants={boxVariants}
-                  initial="normal"
-                  whileHover="hover"
-                  transition={{ type: "tween" }}
-                  onClick={() => onBoxClicked(topRated.id)}
-                  bgphoto={makeImagePath(topRated.backdrop_path, "w500")}
-                >
-                  <Info variants={infoVariants}>
-                    <h4>{topRated.title}</h4>
-                  </Info>
-                </Box>
-              ))}
-            </Row>
-          </Slider>
+          {/* 슬라이더 컴포넌트 */}
+          <SliderComponent
+            sectionName="Now Playing"
+            data={nowPlayingData}
+            isLoading={loadingNowPlaying}
+          />
+          <SliderComponent
+            sectionName="Top Rated"
+            data={topRatedData}
+            isLoading={loadingTopRated}
+          />
+          <SliderComponent
+            sectionName="UpComming"
+            data={upCommingData}
+            isLoading={loadingUpComming}
+          />
+          {/* 오버레이 부분(클릭하면 커지는 것) */}
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
