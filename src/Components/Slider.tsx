@@ -7,33 +7,38 @@ import { makeImagePath } from "../utils";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import { useHistory } from "react-router-dom";
 
-const SliderContainer = styled.div`
-  top: -100px;
-  position: relative;
-  height: 250px;
-`;
-
-const SliderTitle = styled.h2`
-  display: block;
-  font-size: 25px;
-  font-weight: 700;
-  padding: 5px 0;
-`;
-
+/* 부모 컴포넌트 호버하려면 Button이 위에 선언되야함! */
 const Button = styled.button`
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   border: none;
   height: 200px;
   color: white;
-  width: 40px;
+  width: 60px;
   cursor: pointer;
   opacity: 0;
   transition: 0.2s opacity linear;
   z-index: 10;
-  &:hover {
+  font-size: 30px;
+`;
+
+const SliderContainer = styled.div`
+  top: -200px;
+  position: relative;
+  height: 250px;
+  width: 100%;
+  /* 부모컴포넌트 호버시 자식 컴포넌트 애니메이션 */
+  &:hover ${Button} {
     opacity: 1;
   }
+`;
+
+const SliderTitle = styled.h2`
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  padding: 10px;
+  margin-top: 20px;
 `;
 
 const Row = styled(motion.div)`
@@ -43,6 +48,9 @@ const Row = styled(motion.div)`
   width: 100%;
   height: 100%;
   gap: 5px;
+  @media screen and (max-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 `;
 
 const Box = styled(motion.div)<{ bgphoto: string }>`
@@ -64,6 +72,7 @@ const Info = styled(motion.div)`
   h4 {
     text-align: center;
     font-size: 18px;
+    font-weight: 500;
   }
 `;
 
@@ -108,17 +117,12 @@ export interface ISlider {
   sectionName: string;
 }
 
-// 화면 Box 갯수 전역 선언
-const offset = 6;
-
 function Slider({ data, sectionName }: ISlider) {
-  // Row 페이지 상태관리
-  const [index, setIndex] = useState(0);
-  // custom props
-  const [back, setBack] = useState(false);
-  // row들의 간격 벌어짐을 방지하기 위해
-  //??? 이거를 정확히 하는 이유가?...
+  const [offset, setOffset] = useState(6); // 화면 Box 갯수 전역 선언
+  const [index, setIndex] = useState(0); // Row 페이지 상태관리
+  const [back, setBack] = useState(false); // custom props
   const [leaving, setLeaving] = useState(false);
+  // row들의 간격 벌어짐을 방지(다 실행된 후에 클릭 실행하게 하는 것)
 
   // Next버튼 액션
   const nextIndex = () => {
@@ -142,10 +146,16 @@ function Slider({ data, sectionName }: ISlider) {
   };
 
   useEffect(() => {
+    if (window.innerWidth <= 1024) {
+      setOffset(4);
+    } else {
+      setOffset(6);
+    }
+
     if (leaving) {
       setLeaving(false);
     }
-  }, [leaving]);
+  }, [leaving, setOffset]);
 
   return (
     <>

@@ -113,7 +113,7 @@ function Home() {
           {/* 슬라이더 컴포넌트 */}
           <Slider sectionName="Now Playing" data={nowPlayingData} />
           <Slider sectionName="Top Rated" data={topRatedData} />
-          <Slider sectionName="UpComing" data={upComingData} />
+          <Slider sectionName="Upcoming" data={upComingData} />
           {/* 오버레이(클릭하면 커지는 것) */}
           {/* <AnimatePresence>
             {bigMovieMatch ? (
