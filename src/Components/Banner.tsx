@@ -31,12 +31,14 @@ function Banner() {
     ["movies", "nowPlaying"],
     getNowPlaying
   );
+  // 난수 생성해서 메인 배너 상태 무작위로 바꾸기
+  const bannerRandom = Math.floor(Math.random() * 20);
   return (
     <BannerContainer
-      bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
+      bgPhoto={makeImagePath(data?.results[bannerRandom].backdrop_path || "")}
     >
-      <Title>{data?.results[0].title}</Title>
-      <Overview>{data?.results[0].overview}</Overview>
+      <Title>{data?.results[bannerRandom].title}</Title>
+      <Overview>{data?.results[bannerRandom].overview}</Overview>
     </BannerContainer>
   );
 }
