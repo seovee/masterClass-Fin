@@ -3,12 +3,11 @@ import {
   IGetMoviesResult,
   getNowPlaying,
   getTopRated,
-  getUpcomming,
+  getUpcoming,
 } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
-import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Banner from "../Components/Banner";
 import Slider from "../Components/Slider";
@@ -75,22 +74,23 @@ function Home() {
   // 멀티플 Query Hook
   const useMultipleQuery = () => {
     const nowPlaying = useQuery<IGetMoviesResult>(
-      ["nowPlaying", "movie"],
+      ["nowPlaying"],
       getNowPlaying
     );
     const topRated = useQuery<IGetMoviesResult>(["topRated"], getTopRated);
-    const upComming = useQuery<IGetMoviesResult>(["topRated"], getUpcomming);
-    return [nowPlaying, topRated, upComming];
+    const upComing = useQuery<IGetMoviesResult>(["upcoming"], getUpcoming);
+
+    return [nowPlaying, topRated, upComing];
   };
   // 멀티플 Query 배열
   const [
     { isLoading: loadingNowPlaying, data: nowPlayingData },
     { isLoading: loadingTopRated, data: topRatedData },
-    { isLoading: loadingUpComming, data: upCommingData },
+    { isLoading: loadingUpComing, data: upComingData },
   ] = useMultipleQuery();
-
-  const [leaving, setLeaving] = useState(false);
-  const toggleLeaving = () => setLeaving((prev) => !prev);
+  console.log(nowPlayingData);
+  const totalIsLoading =
+    loadingNowPlaying || loadingTopRated || loadingUpComing;
 
   // 영화 상세정보 보기
   const onBoxClicked = (movieId: number) => {
@@ -105,64 +105,17 @@ function Home() {
     );
   return (
     <Wrapper>
-      {loadingNowPlaying ? (
+      {totalIsLoading ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
           {/* 메인 Banner */}
           <Banner />
-          {/* 슬라이더 */}
-          {/* <Slider>
-            <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
-              <button onClick={increaseIndex}>Prev</button>
-              <button onClick={increaseIndex}>Next</button>
-              <Row
-                variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                transition={{ type: "tween", duration: 1 }}
-                key={page}
-              >
-                {nowPlayingData?.results
-                  .slice(1)
-                  .slice(offset * page, offset * page + offset)
-                  .map((movie: any) => (
-                    <Box
-                      key={movie.id}
-                      layoutId={movie.id + ""}
-                      variants={boxHoverVariants}
-                      initial="normal"
-                      whileHover="hover"
-                      transition={{ type: "tween" }}
-                      onClick={() => onBoxClicked(movie.id)}
-                      bgphoto={makeImagePath(movie.backdrop_path, "w500")}
-                    >
-                      <Info variants={infoVariants}>
-                        <h4>{movie.title}</h4>
-                      </Info>
-                    </Box>
-                  ))}
-              </Row>
-            </AnimatePresence>
-          </Slider> */}
           {/* 슬라이더 컴포넌트 */}
-          <Slider
-            sectionName="Now Playing"
-            data={nowPlayingData}
-            isLoading={loadingNowPlaying}
-          />
-          <Slider
-            sectionName="Top Rated"
-            data={topRatedData}
-            isLoading={loadingTopRated}
-          />
-          <Slider
-            sectionName="UpComming"
-            data={upCommingData}
-            isLoading={loadingUpComming}
-          />
-          {/* 오버레이 부분(클릭하면 커지는 것) */}
+          <Slider sectionName="Now Playing" data={nowPlayingData} />
+          <Slider sectionName="Top Rated" data={topRatedData} />
+          <Slider sectionName="UpComing" data={upComingData} />
+          {/* 오버레이(클릭하면 커지는 것) */}
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
