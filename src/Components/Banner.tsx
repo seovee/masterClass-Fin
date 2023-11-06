@@ -27,10 +27,7 @@ const Overview = styled.p`
 `;
 
 function Banner() {
-  const { data } = useQuery<IGetMoviesResult>(
-    ["movies", "nowPlaying"],
-    getNowPlaying
-  );
+  const { data } = useQuery<IGetMoviesResult>(["movies"], getNowPlaying);
   // 난수 생성해서 메인 배너 상태 무작위로 바꾸기
   const bannerRandom = Math.floor(Math.random() * 20);
   return (
