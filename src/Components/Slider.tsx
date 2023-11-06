@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { makeImagePath } from "../utils";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import { useHistory } from "react-router-dom";
@@ -73,7 +73,9 @@ const rowVariants = {
     x: back ? -window.innerWidth : window.innerWidth,
   }),
   visible: { x: 0 },
-  exit: { x: -window.innerWidth },
+  exit: (back: boolean) => ({
+    x: back ? window.innerWidth : -window.innerWidth,
+  }),
 };
 
 const boxHoverVariants = {
@@ -109,23 +111,20 @@ export interface ISlider {
 // 화면 Box 갯수 전역 선언
 const offset = 6;
 
-export default function Slider({ data, sectionName }: ISlider) {
-  const history = useHistory();
+function Slider({ data, sectionName }: ISlider) {
   // Row 페이지 상태관리
   const [index, setIndex] = useState(0);
   // custom props
   const [back, setBack] = useState(false);
-
   // row들의 간격 벌어짐을 방지하기 위해
   //??? 이거를 정확히 하는 이유가?...
   const [leaving, setLeaving] = useState(false);
-  const toggleLeaving = () => setLeaving((prev) => !prev);
 
   // Next버튼 액션
   const nextIndex = () => {
     if (data) {
-      if (leaving) return;
       setLeaving(true);
+      setBack(false);
       const totalMovies = data?.results.length - 1;
       const maxPage = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev >= maxPage ? 0 : prev + 1));
@@ -134,13 +133,19 @@ export default function Slider({ data, sectionName }: ISlider) {
   // Prev버튼 액션
   const prevIndex = () => {
     if (data) {
-      if (leaving) return;
       setLeaving(true);
+      setBack(true);
       const totalMovies = data?.results.length - 1;
       const maxPage = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev <= 0 ? maxPage : prev - 1));
     }
   };
+
+  useEffect(() => {
+    if (leaving) {
+      setLeaving(false);
+    }
+  }, [leaving]);
 
   return (
     <>
@@ -153,11 +158,7 @@ export default function Slider({ data, sectionName }: ISlider) {
           <Button onClick={nextIndex} style={{ right: 0 }}>
             <SlArrowRight />
           </Button>
-          <AnimatePresence
-            initial={false}
-            onExitComplete={toggleLeaving}
-            custom={back}
-          >
+          <AnimatePresence custom={back} initial={false}>
             <Row
               custom={back}
               variants={rowVariants}
@@ -167,23 +168,24 @@ export default function Slider({ data, sectionName }: ISlider) {
               transition={{ type: "tween", duration: 0.5 }}
               key={index}
             >
-              {data.results
-                .slice(offset * index, offset * index + offset)
-                .map((movie: any) => (
-                  <Box
-                    key={movie.id}
-                    layoutId={movie.id + ""}
-                    variants={boxHoverVariants}
-                    initial="normal"
-                    whileHover="hover"
-                    transition={{ type: "tween" }}
-                    bgphoto={makeImagePath(movie.backdrop_path, "w500")}
-                  >
-                    <Info variants={infoVariants}>
-                      <h4>{movie.title}</h4>
-                    </Info>
-                  </Box>
-                ))}
+              {data?.results.slice(offset * index, offset * index + offset).map(
+                (movie: any) =>
+                  movie && (
+                    <Box
+                      key={movie.id}
+                      // layoutId={movie.id + ""}
+                      variants={boxHoverVariants}
+                      initial="normal"
+                      whileHover="hover"
+                      transition={{ type: "tween" }}
+                      bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+                    >
+                      <Info variants={infoVariants}>
+                        <h4>{movie.title}</h4>
+                      </Info>
+                    </Box>
+                  )
+              )}
             </Row>
           </AnimatePresence>
         </SliderContainer>
@@ -191,3 +193,5 @@ export default function Slider({ data, sectionName }: ISlider) {
     </>
   );
 }
+
+export default Slider;

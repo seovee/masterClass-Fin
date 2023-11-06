@@ -88,21 +88,20 @@ function Home() {
     { isLoading: loadingTopRated, data: topRatedData },
     { isLoading: loadingUpComing, data: upComingData },
   ] = useMultipleQuery();
-  console.log(nowPlayingData);
   const totalIsLoading =
     loadingNowPlaying || loadingTopRated || loadingUpComing;
 
   // 영화 상세정보 보기
-  const onBoxClicked = (movieId: number) => {
-    history.push(`/movies/${movieId}`);
-  };
-  // 영화 상세정보 빠져나오기
-  const onOverlayClick = () => history.push("/");
-  const clickedMovie =
-    bigMovieMatch?.params.movieId &&
-    nowPlayingData?.results.find(
-      (movie: any) => movie.id === +bigMovieMatch.params.movieId
-    );
+  // const onBoxClicked = (movieId: number) => {
+  //   history.push(`/movies/${movieId}`);
+  // };
+  // // 영화 상세정보 빠져나오기
+  // const onOverlayClick = () => history.push("/");
+  // const clickedMovie =
+  //   bigMovieMatch?.params.movieId &&
+  //   nowPlayingData?.results.find(
+  //     (movie: any) => movie.id === +bigMovieMatch.params.movieId
+  //   );
   return (
     <Wrapper>
       {totalIsLoading ? (
@@ -116,7 +115,7 @@ function Home() {
           <Slider sectionName="Top Rated" data={topRatedData} />
           <Slider sectionName="UpComing" data={upComingData} />
           {/* 오버레이(클릭하면 커지는 것) */}
-          <AnimatePresence>
+          {/* <AnimatePresence>
             {bigMovieMatch ? (
               <>
                 <Overlay
@@ -145,7 +144,7 @@ function Home() {
                 </BigMovieContainer>
               </>
             ) : null}
-          </AnimatePresence>
+          </AnimatePresence> */}
         </>
       )}
     </Wrapper>
