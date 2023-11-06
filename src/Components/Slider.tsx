@@ -35,10 +35,13 @@ const SliderContainer = styled.div`
 
 const SliderTitle = styled.h2`
   display: block;
-  font-size: 1.8rem;
+  font-size: 30px;
   font-weight: 700;
   padding: 10px;
   margin-top: 20px;
+  @media screen and (max-width: 1024px) {
+    font-size: 25px;
+  }
 `;
 
 const Row = styled(motion.div)`

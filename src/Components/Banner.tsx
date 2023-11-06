@@ -19,11 +19,17 @@ const Title = styled.h2`
   font-size: 68px;
   margin-bottom: 20px;
   font-weight: 600;
+  @media screen and (max-width: 1024px) {
+    font-size: 40px;
+  }
 `;
 
 const Overview = styled.p`
   font-size: 30px;
   width: 50%;
+  @media screen and (max-width: 1024px) {
+    font-size: 20px;
+  }
 `;
 
 function Banner() {
