@@ -6,7 +6,6 @@ import {
   getUpcoming,
 } from "../api";
 import styled from "styled-components";
-import { makeImagePath } from "../utils";
 import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Banner from "../Components/Banner";
