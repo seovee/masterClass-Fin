@@ -1,11 +1,11 @@
-//* Slider 컴포넌트
-
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useViewportScroll } from "framer-motion";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { makeImagePath } from "../utils";
+import { Types, makeImagePath } from "../utils";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
-import { useHistory } from "react-router-dom";
+import { useHistory, useRouteMatch } from "react-router-dom";
+import { IGetMoviesResult, getMovies } from "../api";
+import { useQuery } from "react-query";
 
 /* 부모 컴포넌트 호버하려면 Button이 위에 선언되야함! */
 const Button = styled.button`
@@ -23,11 +23,10 @@ const Button = styled.button`
 `;
 
 const SliderContainer = styled.div`
-  top: -200px;
+  top: -100px;
   position: relative;
   height: 250px;
   width: 100%;
-  /* 부모컴포넌트 호버시 자식 컴포넌트 애니메이션 */
   &:hover ${Button} {
     opacity: 1;
   }
@@ -75,17 +74,59 @@ const Info = styled(motion.div)`
   h4 {
     text-align: center;
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 200;
   }
+`;
+
+const Overlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  z-index: 5;
+`;
+
+const BigMovieContainer = styled(motion.div)`
+  position: absolute;
+  width: 40vw;
+  height: 80vh;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  background-color: ${(props) => props.theme.black.lighter};
+  z-index: 10;
+`;
+
+const BigCover = styled.div`
+  width: 100%;
+  height: 400px;
+  background-size: cover;
+  background-position: center center;
+`;
+
+const BigTitle = styled.h3`
+  color: ${(props) => props.theme.white.lighter};
+  padding: 10px;
+  font-size: 46px;
+  position: relative;
+  top: -80px;
+`;
+
+const BigOverview = styled.p`
+  padding: 20px;
+  position: relative;
+  top: -80px;
 `;
 
 // & Variants
 const rowVariants = {
-  hidden: (back: boolean) => ({
+  outRow: (back: boolean) => ({
     x: back ? -window.innerWidth : window.innerWidth,
   }),
   visible: { x: 0 },
-  exit: (back: boolean) => ({
+  inRow: (back: boolean) => ({
     x: back ? window.innerWidth : -window.innerWidth,
   }),
 };
@@ -107,7 +148,7 @@ const infoVariants = {
   hover: {
     opacity: 1,
     transition: {
-      delay: 0.5,
+      delay: 0.3,
       duration: 0.3,
       type: "tween",
     },
@@ -120,12 +161,20 @@ export interface ISlider {
   sectionName: string;
 }
 
-function Slider({ data, sectionName }: ISlider) {
+function Slider({ type }: { type: Types }) {
+  const history = useHistory();
+  const overlayMovie = useRouteMatch<{ movieId: string }>(
+    `/movies/${type}/:movieId`
+  );
+  const { scrollY } = useViewportScroll();
+  const { data, isLoading } = useQuery<IGetMoviesResult>(["movies", type], () =>
+    getMovies(type)
+  );
+
   const [offset, setOffset] = useState(6); // 화면 Box 갯수 전역 선언
   const [index, setIndex] = useState(0); // Row 페이지 상태관리
   const [back, setBack] = useState(false); // custom props
-  const [leaving, setLeaving] = useState(false);
-  // row들의 간격 벌어짐을 방지(다 실행된 후에 클릭 실행하게 하는 것)
+  const [leaving, setLeaving] = useState(false); // row들의 간격 벌어짐을 방지(다 실행된 후에 클릭 실행하게 하는 것)
 
   // Next버튼 액션
   const nextIndex = () => {
@@ -154,55 +203,110 @@ function Slider({ data, sectionName }: ISlider) {
     } else {
       setOffset(6);
     }
-
     if (leaving) {
       setLeaving(false);
     }
   }, [leaving, setOffset]);
 
+  // 영화 상세정보 보기
+  const onBoxClicked = ({
+    movieId,
+    category,
+  }: {
+    movieId: number;
+    category: string;
+  }) => {
+    history.push(`/movies/${category}/${movieId}`);
+  };
+
+  // 영화 상세정보 빠져나오기
+  const onOverlayClick = () => history.push("/");
+
+  // ^ 이 부분의 정확한 로직이 이해되지 않음.
+  // fetch한 데이터와 useRouteMatch와 매치한 데이터 불러오기
+  const clickedMovie =
+    overlayMovie?.params.movieId &&
+    data?.results.find((movie) => movie.id === +overlayMovie.params.movieId);
+
+  console.log(clickedMovie);
+
   return (
     <>
-      {data && (
-        <SliderContainer>
-          <SliderTitle>{sectionName}</SliderTitle>
-          <Button onClick={prevIndex} style={{ left: 0 }}>
-            <SlArrowLeft />
-          </Button>
-          <Button onClick={nextIndex} style={{ right: 0 }}>
-            <SlArrowRight />
-          </Button>
-          <AnimatePresence custom={back} initial={false}>
-            <Row
-              custom={back}
-              variants={rowVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ type: "tween", duration: 0.5 }}
-              key={index}
+      <SliderContainer>
+        <SliderTitle>{type}</SliderTitle>
+        <Button onClick={prevIndex} style={{ left: 0 }}>
+          <SlArrowLeft />
+        </Button>
+        <Button onClick={nextIndex} style={{ right: 0 }}>
+          <SlArrowRight />
+        </Button>
+        <AnimatePresence custom={back} initial={false}>
+          <Row
+            key={index}
+            custom={back}
+            variants={rowVariants}
+            initial="outRow"
+            animate="visible"
+            exit="inRow"
+            transition={{ type: "tween", duration: 0.5 }}
+          >
+            {data?.results.slice(offset * index, offset * index + offset).map(
+              (movie) =>
+                movie && (
+                  <Box
+                    key={type + movie.id}
+                    onClick={() =>
+                      onBoxClicked({ movieId: movie.id, category: type })
+                    }
+                    layoutId={type + movie.id}
+                    variants={boxHoverVariants}
+                    initial="normal"
+                    whileHover="hover"
+                    transition={{ type: "tween" }}
+                    bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+                  >
+                    <Info variants={infoVariants}>
+                      <h4>{movie.title}</h4>
+                    </Info>
+                  </Box>
+                )
+            )}
+          </Row>
+        </AnimatePresence>
+      </SliderContainer>
+      <AnimatePresence>
+        {overlayMovie ? (
+          <>
+            <Overlay
+              onClick={onOverlayClick}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <BigMovieContainer
+              style={{ top: scrollY.get() + 100 }}
+              layoutId={type + overlayMovie.params.movieId}
             >
-              {data?.results.slice(offset * index, offset * index + offset).map(
-                (movie: any) =>
-                  movie && (
-                    <Box
-                      key={movie.id}
-                      // layoutId={movie.id + ""}
-                      variants={boxHoverVariants}
-                      initial="normal"
-                      whileHover="hover"
-                      transition={{ type: "tween" }}
-                      bgphoto={makeImagePath(movie.backdrop_path, "w500")}
-                    >
-                      <Info variants={infoVariants}>
-                        <h4>{movie.title}</h4>
-                      </Info>
-                    </Box>
-                  )
+              {clickedMovie && (
+                <>
+                  <BigCover
+                    style={{
+                      backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
+                        clickedMovie.backdrop_path,
+                        "w500"
+                      )})`,
+                    }}
+                  />
+                  <BigTitle>{clickedMovie.title}</BigTitle>
+                  <BigOverview>{clickedMovie.overview}</BigOverview>
+                  <div>{clickedMovie.popularity}</div>
+                  <div>{clickedMovie.release_date}</div>
+                  <div>{clickedMovie.genre_ids[0]}</div>
+                </>
               )}
-            </Row>
-          </AnimatePresence>
-        </SliderContainer>
-      )}
+            </BigMovieContainer>
+          </>
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }
