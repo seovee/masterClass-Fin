@@ -1,8 +1,8 @@
-//* 메인 Banner 컴포넌트
 import { useQuery } from "react-query";
 import { IGetMoviesResult, getNowPlaying } from "../api";
 import { makeImagePath } from "../utils";
 import styled from "styled-components";
+import { useEffect, useState } from "react";
 
 const BannerContainer = styled.div<{ bgPhoto: string }>`
   height: 100vh;
@@ -33,15 +33,21 @@ const Overview = styled.p`
 `;
 
 function Banner() {
+  const [banner, setBanner] = useState(0);
   const { data } = useQuery<IGetMoviesResult>(["movies"], getNowPlaying);
-  // 난수 생성해서 메인 배너 상태 무작위로 바꾸기
-  const bannerRandom = Math.floor(Math.random() * 20);
+
+  useEffect(() => {
+    // 난수 생성해서 메인 배너 상태 무작위로 바꾸기
+    const bannerRandom = Math.floor(Math.random() * 20);
+    setBanner(bannerRandom);
+  }, []);
+
   return (
     <BannerContainer
-      bgPhoto={makeImagePath(data?.results[bannerRandom].backdrop_path || "")}
+      bgPhoto={makeImagePath(data?.results[banner].backdrop_path || "")}
     >
-      <Title>{data?.results[bannerRandom].title}</Title>
-      <Overview>{data?.results[bannerRandom].overview}</Overview>
+      <Title>{data?.results[banner].title}</Title>
+      <Overview>{data?.results[banner].overview}</Overview>
     </BannerContainer>
   );
 }
