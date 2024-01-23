@@ -33,22 +33,30 @@ export interface IGetMoviesResult {
 
 // 장르별 영화 검색
 export function getMovies(type: Types) {
-  return fetch(`${BASE_PATH}/movie/${type}?api_key=${API_KEY}`).then(
-    (response) => response.json()
-  );
+  return fetch(
+    `${BASE_PATH}/movie/${type}?api_key=${API_KEY}&language=en-US`
+  ).then((response) => response.json());
 }
+// TODO: 한글화 안되어있는 것 예외처리 필요 ko-KR
 
 // 영화 상세 검색
-export function getMovieDetail(movieId: any) {
-  return fetch(`${BASE_PATH}/movie/${movieId}?api_key=${API_KEY}`).then(
-    (response) => response.json()
-  );
+export function getMovieDetail(movieId: number) {
+  return fetch(
+    `${BASE_PATH}/movie/${movieId}?api_key=${API_KEY}&language=en-US`
+  ).then((response) => response.json());
+}
+
+// 영화 비디오 검색
+export function getMovieVideo(movieId: number) {
+  return fetch(
+    `${BASE_PATH}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`
+  ).then((response) => response.json());
 }
 
 export function getNowPlaying() {
-  return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}`).then(
-    (response) => response.json()
-  );
+  return fetch(
+    `${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=en-US`
+  ).then((response) => response.json());
 }
 
 export function getTopRated() {

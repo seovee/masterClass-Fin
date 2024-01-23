@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Types, makeImagePath } from "../utils";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import { useHistory, useRouteMatch } from "react-router-dom";
-import { IGetMoviesResult, getMovies } from "../api";
+import { IGetMoviesResult, getMovieVideo, getMovies } from "../api";
 import { useQuery } from "react-query";
 
 /* 부모 컴포넌트 호버하려면 Button이 위에 선언되야함! */
@@ -49,7 +49,7 @@ const Row = styled(motion.div)`
   position: absolute;
   width: 100%;
   height: 100%;
-  gap: 5px;
+  gap: 10px;
   @media screen and (max-width: 1024px) {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -155,18 +155,13 @@ const infoVariants = {
   },
 };
 
-// & Interface
-export interface ISlider {
-  data: any;
-  sectionName: string;
-}
-
 function Slider({ type }: { type: Types }) {
   const history = useHistory();
   const overlayMovie = useRouteMatch<{ movieId: string }>(
     `/movies/${type}/:movieId`
   );
   const { scrollY } = useViewportScroll();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, isLoading } = useQuery<IGetMoviesResult>(["movies", type], () =>
     getMovies(type)
   );
@@ -227,8 +222,6 @@ function Slider({ type }: { type: Types }) {
   const clickedMovie =
     overlayMovie?.params.movieId &&
     data?.results.find((movie) => movie.id === +overlayMovie.params.movieId);
-
-  console.log(clickedMovie);
 
   return (
     <>
@@ -297,7 +290,11 @@ function Slider({ type }: { type: Types }) {
                     }}
                   />
                   <BigTitle>{clickedMovie.title}</BigTitle>
-                  <BigOverview>{clickedMovie.overview}</BigOverview>
+                  <BigOverview>
+                    {clickedMovie?.overview === ""
+                      ? "제공하는 줄거리가 존재하지 않습니다."
+                      : clickedMovie?.overview}
+                  </BigOverview>
                   <div>{clickedMovie.popularity}</div>
                   <div>{clickedMovie.release_date}</div>
                   <div>{clickedMovie.genre_ids[0]}</div>

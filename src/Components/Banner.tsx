@@ -25,7 +25,7 @@ const Title = styled.h2`
 `;
 
 const Overview = styled.p`
-  font-size: 30px;
+  font-size: 24px;
   width: 50%;
   @media screen and (max-width: 1024px) {
     font-size: 20px;
@@ -47,7 +47,9 @@ function Banner() {
       bgPhoto={makeImagePath(data?.results[banner].backdrop_path || "")}
     >
       <Title>{data?.results[banner].title}</Title>
-      <Overview>{data?.results[banner].overview}</Overview>
+      <Overview>
+        {data?.results[banner].overview || "제공하는 줄거리가 없습니다."}
+      </Overview>
     </BannerContainer>
   );
 }
