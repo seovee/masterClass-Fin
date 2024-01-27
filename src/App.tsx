@@ -4,6 +4,7 @@ import Tv from "./Routes/Tv";
 import Search from "./Routes/Search";
 import Header from "./Components/Header";
 import About from "./Routes/About";
+import Footer from "./Components/Footer";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Home />
         </Route>
       </Switch>
+      <Footer />
     </Router>
   );
 }
