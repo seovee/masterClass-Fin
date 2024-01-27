@@ -1,10 +1,5 @@
 import { useQuery } from "react-query";
-import {
-  IGetMoviesResult,
-  getNowPlaying,
-  getTopRated,
-  getUpcoming,
-} from "../api";
+import { IGetMoviesResult, getNowPlaying } from "../api";
 import styled from "styled-components";
 import Banner from "../Components/Banner";
 import Slider from "../Components/Slider";
@@ -12,7 +7,7 @@ import { Types } from "../utils";
 
 const Wrapper = styled.div`
   background: black;
-  padding-bottom: 200px;
+  padding-bottom: 50px;
 `;
 
 const Loader = styled.div`
@@ -26,26 +21,15 @@ const Loader = styled.div`
 
 function Home() {
   // 멀티플 Query Hook
-  const useMultipleQuery = () => {
-    const nowPlaying = useQuery<IGetMoviesResult>(
-      ["nowPlaying"],
-      getNowPlaying
-    );
-    const topRated = useQuery<IGetMoviesResult>(["topRated"], getTopRated);
-    const upComing = useQuery<IGetMoviesResult>(["upcoming"], getUpcoming);
-    return [nowPlaying, topRated, upComing];
-  };
-  // 멀티플 Query 배열
-  const [
-    { isLoading: loadingNowPlaying, data: nowPlayingData },
-    { isLoading: loadingTopRated, data: topRatedData },
-    { isLoading: loadingUpComing, data: upComingData },
-  ] = useMultipleQuery();
-  const totalIsLoading =
-    loadingNowPlaying || loadingTopRated || loadingUpComing;
+
+  const { isLoading } = useQuery<IGetMoviesResult>(
+    ["nowPlaying"],
+    getNowPlaying
+  );
+
   return (
     <Wrapper>
-      {totalIsLoading ? (
+      {isLoading ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
@@ -56,8 +40,6 @@ function Home() {
           <Slider type={Types.popular} />
           <Slider type={Types.top_rated} />
           <Slider type={Types.upcoming} />
-
-          {/* 오버레이(클릭하면 커지는 것) */}
         </>
       )}
     </Wrapper>

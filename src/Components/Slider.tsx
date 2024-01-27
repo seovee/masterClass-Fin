@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Types, makeImagePath } from "../utils";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import { useHistory, useRouteMatch } from "react-router-dom";
-import { IGetMoviesResult, getMovieVideo, getMovies } from "../api";
+import { IGetMoviesResult, getMovieDetail, getMovies } from "../api";
 import { useQuery } from "react-query";
 
 /* 부모 컴포넌트 호버하려면 Button이 위에 선언되야함! */
@@ -90,12 +90,12 @@ const Overlay = styled(motion.div)`
 
 const BigMovieContainer = styled(motion.div)`
   position: absolute;
-  width: 40vw;
+  width: 90vw;
   height: 80vh;
   left: 0;
   right: 0;
   margin: 0 auto;
-  background-color: ${(props) => props.theme.black.lighter};
+  background-color: ${(props) => props.theme.black.veryDark};
   z-index: 10;
 `;
 
@@ -108,14 +108,15 @@ const BigCover = styled.div`
 
 const BigTitle = styled.h3`
   color: ${(props) => props.theme.white.lighter};
-  padding: 10px;
+  padding: 10px 20px;
   font-size: 46px;
+  font-weight: 900;
   position: relative;
   top: -80px;
 `;
 
 const BigOverview = styled.p`
-  padding: 20px;
+  padding: 10px 20px;
   position: relative;
   top: -80px;
 `;
@@ -161,14 +162,19 @@ function Slider({ type }: { type: Types }) {
     `/movies/${type}/:movieId`
   );
   const { scrollY } = useViewportScroll();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data, isLoading } = useQuery<IGetMoviesResult>(["movies", type], () =>
+  const { data } = useQuery<IGetMoviesResult>(["movies", type], () =>
     getMovies(type)
   );
 
+  const { data: detailData } = useQuery("detailMovies", () =>
+    getMovieDetail(12434)
+  );
+
+  console.log(detailData);
+
   const [offset, setOffset] = useState(6); // 화면 Box 갯수 전역 선언
   const [index, setIndex] = useState(0); // Row 페이지 상태관리
-  const [back, setBack] = useState(false); // custom props
+  const [back, setBack] = useState(false); // 애니메이션 custom props
   const [leaving, setLeaving] = useState(false); // row들의 간격 벌어짐을 방지(다 실행된 후에 클릭 실행하게 하는 것)
 
   // Next버튼 액션
@@ -283,7 +289,7 @@ function Slider({ type }: { type: Types }) {
                 <>
                   <BigCover
                     style={{
-                      backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
+                      backgroundImage: `linear-gradient(to top, #141414, transparent), url(${makeImagePath(
                         clickedMovie.backdrop_path,
                         "w500"
                       )})`,
@@ -295,9 +301,10 @@ function Slider({ type }: { type: Types }) {
                       ? "제공하는 줄거리가 존재하지 않습니다."
                       : clickedMovie?.overview}
                   </BigOverview>
+                  <div>{clickedMovie.adult ? "19" : "전체이용가"}</div>
                   <div>{clickedMovie.popularity}</div>
-                  <div>{clickedMovie.release_date}</div>
-                  <div>{clickedMovie.genre_ids[0]}</div>
+                  <div>개봉일자: {clickedMovie.release_date}</div>
+                  <div>평점 : {clickedMovie.vote_average}</div>
                 </>
               )}
             </BigMovieContainer>

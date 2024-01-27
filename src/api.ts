@@ -58,15 +58,3 @@ export function getNowPlaying() {
     `${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=en-US`
   ).then((response) => response.json());
 }
-
-export function getTopRated() {
-  return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}`).then(
-    (response) => response.json()
-  );
-}
-
-export function getUpcoming() {
-  return fetch(`${BASE_PATH}/movie/upcoming?api_key=${API_KEY}`).then(
-    (response) => response.json()
-  );
-}
